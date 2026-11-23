@@ -1,0 +1,33 @@
+[
+  {
+    "question": "初學者從哪裡開始？",
+    "pages": [
+      "board",
+      "liberties"
+    ],
+    "decision": "先介紹交叉點與氣，使用 9 路盤。"
+  },
+  {
+    "question": "四周都是對手棋子就不能下嗎？",
+    "pages": [
+      "legal",
+      "capture"
+    ],
+    "decision": "先判斷能否提走對手棋，製作提子例外練習。"
+  },
+  {
+    "question": "沒有兩眼就一定死嗎？",
+    "pages": [
+      "eyes"
+    ],
+    "decision": "補上雙活提示，保留規則邊界。"
+  },
+  {
+    "question": "計分是否還要加提子？",
+    "pages": [
+      "scoring",
+      "ending"
+    ],
+    "decision": "本課面積計分不另加提子，例題明列白貼 6.5。"
+  }
+]

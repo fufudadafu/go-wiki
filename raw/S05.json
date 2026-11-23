@@ -1,0 +1,22 @@
+{
+  "id": "S05",
+  "title": "American Go Association Rules - Short Version",
+  "label": "終局與數子法定義",
+  "org": "AGA 制定，英國圍棋協會轉載",
+  "language": "英文",
+  "url": "https://www.britgo.org/rules/agashort.html",
+  "sections": [
+    "9) Ending the Game",
+    "12) Counting"
+  ],
+  "version": "1991 年 4 月版；轉載頁標示 2017-11-29 更新",
+  "points": [
+    "面積計分把盤上活子與所圍空點相加，已提走的棋子不再另加分。",
+    "連續停一手後，仍需確認死活；存在爭議時要按所採規則處理。"
+  ],
+  "note": "僅引用面積計分的定義及終局基本觀念。舊版 5.5 貼目、停一手交子、白最後行棋等屬該版本設定，不冒充完整中國規則。",
+  "accessed_on": "2026-11-23",
+  "read_status": "正文已透過網頁讀取工具確認",
+  "storage": "保留網址、有限摘錄及整理紀錄，未保存完整原文",
+  "excerpt": "Prisoners are ignored."
+}

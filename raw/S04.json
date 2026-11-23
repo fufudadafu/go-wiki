@@ -1,0 +1,25 @@
+{
+  "id": "S04",
+  "title": "How to Play",
+  "label": "9 路盤入門、眼與劫",
+  "org": "英國圍棋協會",
+  "language": "英文",
+  "url": "https://www.britgo.org/intro/intro2.html",
+  "sections": [
+    "Strings",
+    "Life and death and the concept of eyes",
+    "The ko rule",
+    "Seki",
+    "Komi"
+  ],
+  "version": "頁面最後更新標示 2017-10-26",
+  "points": [
+    "以九路盤示範連接、眼、劫與雙活，適合安排入門順序。",
+    "兩個分開的真眼可保障同一塊棋存活；雙活提醒我們不能把無兩眼一律當死棋。"
+  ],
+  "note": "主文採數目計分並含 AGA 終局程序；這些設定不直接混入數子例題。其 7.5 貼目敘述也不視為所有棋盤通用。",
+  "accessed_on": "2026-11-23",
+  "read_status": "正文已透過網頁讀取工具確認",
+  "storage": "保留網址、有限摘錄及整理紀錄，未保存完整原文",
+  "excerpt": "We recommend that beginners learn the basics on a 9 by 9 board"
+}

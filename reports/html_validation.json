@@ -1,0 +1,12 @@
+{
+  "checked_at": "2026-11-23T10:46:21.496Z",
+  "javascript_syntax": "passed",
+  "rendered_lesson_pages": 16,
+  "checked_diagram_actions": 5,
+  "checked_quiz_answers": 3,
+  "rendered_wiki_pages": 17,
+  "internal_wiki_routes": "passed",
+  "keyboard_and_select_handlers": "passed",
+  "offline_external_dependencies": 0,
+  "limitation": "使用 Node VM 與最小 DOM 替身檢查程式及組合結果；沒有執行真實瀏覽器排版、點擊或手機實機測試。"
+}

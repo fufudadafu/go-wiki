@@ -1,0 +1,111 @@
+import json,re,html
+from pathlib import Path
+
+ROOT=Path(__file__).resolve().parents[1]
+data=json.loads((ROOT/"content.json").read_text())
+validation=json.loads((ROOT/"reports/validation.json").read_text())
+
+def inline(s):
+    s=html.escape(s)
+    def link(m):
+        label,url=m.group(1),html.unescape(m.group(2))
+        if url.startswith("https://"):
+            return '<a href="'+html.escape(url,quote=True)+'" target="_blank" rel="noopener noreferrer">'+label+'</a>'
+        key=Path(url).stem
+        return '<a href="#wiki/'+key+'" data-route="wiki/'+key+'">'+label+'</a>'
+    return re.sub(r"\[([^\]]+)\]\(([^)]+)\)",link,s)
+
+def markdown(text):
+    out=[];ul=False;table=False
+    def close():
+        nonlocal ul,table
+        if ul:out.append("</ul>");ul=False
+        if table:out.append("</tbody></table></div>");table=False
+    for line in text.splitlines():
+        if not line.strip():close();continue
+        if line.startswith("|"):
+            cells=[x.strip() for x in line.strip("|").split("|")]
+            if all(re.fullmatch(r"[- :]+",c) for c in cells):continue
+            if not table:
+                if ul:out.append("</ul>");ul=False
+                out.append('<div class="table-scroll"><table><thead><tr>'+''.join("<th>"+inline(c)+"</th>" for c in cells)+"</tr></thead><tbody>");table=True
+            else:out.append("<tr>"+''.join("<td>"+inline(c)+"</td>" for c in cells)+"</tr>")
+        elif line.startswith("#"):
+            close();level=min(len(line)-len(line.lstrip("#")),4)
+            out.append("<h"+str(level)+">"+inline(line.lstrip("# "))+"</h"+str(level)+">")
+        elif line.startswith("- "):
+            if table:out.append("</tbody></table></div>");table=False
+            if not ul:out.append("<ul>");ul=True
+            out.append("<li>"+inline(line[2:])+"</li>")
+        else:
+            close();out.append("<p>"+inline(line)+"</p>")
+    close();return "\n".join(out)
+
+allpages=[]
+for f in sorted((ROOT/"wiki").rglob("*.md")):
+    key=f.stem
+    title=next((l.lstrip("# ") for l in f.read_text().splitlines() if l.startswith("# ")),"")
+    allpages.append(dict(key=key,title=title,kind="來源" if f.parent.name=="sources" else "概念" if f.parent.name=="concepts" else "維護",
+                         html=markdown(f.read_text()),search=f.read_text(),path=str(f.relative_to(ROOT))))
+
+report="""# 圍棋 LLM Wiki 與 HTML 教學簡報：作業說明
+
+## 專案簡介
+本專案為完全不熟悉圍棋的人建立知識庫，使用五篇已實際讀取的公開資料整理來源卡與九篇互相連結的概念頁，再查詢 Wiki 製作十六頁繁體中文 HTML 教學簡報。採九路盤圖解，包含數氣、提子與合法落子三題互動練習。
+
+## 先討論、後生成
+使用者在對話中先提出圍棋主題，與 AI 確認對象、教學目標、納入與排除的概念，以及五類資料方向。使用者之後確認新手、九路盤、數子法與三題練習，再要求先列五個來源，最後授權開始製作。這是實際討論順序。若老師需要對話截圖，請另由原對話擷取，本專案沒有虛構截圖。
+
+## 實際 ingest
+五篇資料均在本次對話中以網頁工具讀取正文，再逐篇建立 raw/S01.json 至 S05.json、來源摘要及索引。讀取後以繁體中文整合九篇概念頁，記錄規則差異並互相連結。raw 保存的是網址、讀取段落、有限摘錄與固定閱讀紀錄，並非完整原文備份。
+
+## Workflow 與 graph
+初版流程是取得資料、逐篇整理、查詢 Wiki、產生 HTML、檢查。實際讀取時發現來源混用計分方法與不同貼目設定，因此在 ingest 前加入來源可讀性、計分規則與版本檢查。
+現在的流程是：取得資料、檢查正文及規則版本、逐篇 ingest、Wiki 一致性檢查、查詢 Wiki 與整理教學順序、產生 HTML、盤面與功能檢查、完成。HTML 的「流程與反思」頁有可閱讀的流程圖。
+
+## 哪些步驟會重複
+- 每篇來源重複讀取、分類、摘要與更新索引，共五次。
+- 原文讀不到或規則版本不明，回到取得來源節點。
+- Wiki 的術語或計分不一致，回到來源分類與概念整合節點。
+- 例題盤面或答案不符，修正例題後重跑盤面檢查。
+- HTML 程式或內部連結有問題，修正後重新檢查。
+
+## 查詢 Wiki 後才製作簡報
+實際查詢與採用頁面保存於 reports/wiki_queries.json。查詢包括：從哪裡開始、被包圍的位置能否下子、無兩眼是否一定死，以及面積計分是否加提子。內容缺口先在 Wiki 說明，再編排簡報。原創局部圖與終局例題明確標示為教學示意。
+
+## 本次反思：哪個節點最常出錯
+以本次實際發現的問題類型計，來源整合節點最多，共兩類。第一類是數目與數子兩種計分被放在同一資料集合；第二類是來源版本與貼目情境不同，S05 的 1991 年版寫 5.5，S04 提到 7.5。它們不表示其中一篇必然錯誤，問題在於若沒有分類就整合，會讓教學自相矛盾。
+本次沒有多輪失敗的頻率統計，不能據此宣稱一般模型最容易在哪裡出錯。
+
+## 把檢查往前移到哪裡
+把計分方法、版本與貼目參數的檢查移到來源進入 Wiki 前。每張來源卡先標明適用範圍，只有共通且一致的概念進入教學頁。用 S05 的面積定義作為本課計分基礎，數值題另標示白貼 6.5 為教學自訂設定。
+
+## 有沒有修改 graph，為什麼
+有。在取得資料與 ingest 之間新增來源規則檢查，並保留 Wiki 一致性檢查。這樣能在生成簡報前處理規則差異，避免完成簡報後才逐頁改計分。兩眼活棋也補上雙活的例外提示。
+
+## 驗證與限制
+已以獨立的棋盤運算驗證氣、提子、自殺、提子例外、簡單劫、兩眼示意、面積計分及三題答案，並檢查 Wiki 來源與內部連結。工具結果保存於 reports/validation.json。
+本環境沒有可用的瀏覽器控制工具，因此沒有宣稱完成真實點擊或手機視覺測試。已檢查 HTML 內嵌程式與導航事件；開啟後仍可由使用者確認字體與實際裝置版面。
+本教學與程式只涵蓋選定的入門概念，不是完整比賽裁判引擎。所有盤面均為自編示意，不是引用職業棋譜。
+
+## 檔案使用
+- 開啟 go-beginner.html，可離線閱讀簡報、Wiki、來源與流程反思。
+- wiki/index.md 是 Markdown Wiki 入口。
+- AGENTS.md 定義後續維護、ingest、來源與驗證規則。
+- node tools/check_go.mjs 重新驗證教學盤面。
+- python3 tools/build.py 依已整理的 Wiki 重建 HTML，這個重建工具不會自動搜尋或呼叫 LLM。
+
+## 資料來源
+"""
+for s in data["sources"]:
+    report+="- ["+s["id"]+" "+s["title"]+"]("+s["url"]+")，"+s["org"]+"，取得日期 "+data["date"]+"。\n"
+(ROOT/"reports/assignment.md").write_text(report)
+data["wiki"]=allpages
+data["report_html"]=markdown(report)
+data["validation"]=validation
+payload=json.dumps(data,ensure_ascii=False).replace("</","<\\/")
+model=(ROOT/"tools/go-model.mjs").read_text().replace("export ","")
+template=(ROOT/"tools/template.html").read_text()
+output=template.replace("__CONTENT_JSON__",payload).replace("__GO_MODEL__",model)
+(ROOT/"dist/index.html").write_text(output)
+print(json.dumps(dict(html_bytes=len(output.encode()),wiki_pages=len(allpages),sources=5,slides=16),ensure_ascii=False))
